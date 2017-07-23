@@ -1,0 +1,54 @@
+<canvas id="canvas" width="800" height="400"></canvas>
+<script type="text/javascript">
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+
+// path
+var sx = canvas.width/2;
+var sy = canvas.height;
+var r = canvas.width/2 - 50;
+
+// daylight
+var sTime = 7 * 60;
+var eTime = 19 * 60;
+var sAngle = 0;
+var eAngle = Math.PI;
+
+ctx.fillStyle = "black";
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+var drawSun = function() {
+  var [x, y] = getSunPosition();
+  ctx.fillStyle = "yellow";
+  ctx.beginPath();
+  ctx.arc(x, y, 30, 0, 2 * Math.PI);
+  ctx.fill();
+}
+
+var drawSunPath = function() {
+  ctx.strokeStyle = "#595600";
+  ctx.beginPath();
+  ctx.setLineDash([5, 20])
+  ctx.arc(sx, sy, r, Math.PI, 0);
+  ctx.stroke();
+}
+
+var getSunPosition = function() {
+  var mins = timeInMinutes();
+  var angle = (mins - sTime) / (eTime - sTime) * eAngle;
+  var x = sx + r * Math.cos(angle - Math.PI);
+  var y = sy + r * Math.sin(angle - Math.PI);
+  return [x, y];
+}
+
+var timeInMinutes = function() {
+  var now = new Date();
+  var min = now.getMinutes();
+  var hours = now.getHours();
+  return min + hours * 60;
+}
+
+drawSunPath();
+drawSun();
+
+</script>
