@@ -1,11 +1,11 @@
-<canvas id="canvas" width="800" height="400"></canvas>
+<canvas id="canvas" width="800" height="800"></canvas>
 <script type="text/javascript">
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
 // path
 var sx = canvas.width/2;
-var sy = canvas.height;
+var sy = 400;
 var r = canvas.width/2 - 50;
 
 // daylight
@@ -20,6 +20,14 @@ ctx.fillRect(0, 0, canvas.width, canvas.height);
 var drawSun = function() {
   var [x, y] = getSunPosition();
   ctx.fillStyle = "yellow";
+  ctx.beginPath();
+  ctx.arc(x, y, 30, 0, 2 * Math.PI);
+  ctx.fill();
+}
+
+var drawMoon = function() {
+  var [x, y] = getMoonPosition();
+  ctx.fillStyle = "blue";
   ctx.beginPath();
   ctx.arc(x, y, 30, 0, 2 * Math.PI);
   ctx.fill();
@@ -41,6 +49,14 @@ var getSunPosition = function() {
   return [x, y];
 }
 
+var getMoonPosition = function() {
+  var mins = timeInMinutes();
+  var angle = (mins - sTime) / (eTime - sTime) * eAngle;
+  var x = sx + r * Math.cos(angle);
+  var y = sy + r * Math.sin(angle);
+  return [x, y];
+}
+
 var timeInMinutes = function() {
   var now = new Date();
   var min = now.getMinutes();
@@ -50,5 +66,6 @@ var timeInMinutes = function() {
 
 drawSunPath();
 drawSun();
+drawMoon();
 
 </script>
