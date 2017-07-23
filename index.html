@@ -1,4 +1,5 @@
 <canvas id="canvas" width="800" height="400"></canvas>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script type="text/javascript">
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
@@ -8,25 +9,28 @@ var sx = canvas.width/2;
 var sy = canvas.height;
 var r = canvas.width/2 - 50;
 
-// daylight
-var sTime = 7 * 60;
-var eTime = 19 * 60;
-var sAngle = 0;
-var eAngle = Math.PI;
 
-ctx.fillStyle = "black";
-ctx.fillRect(0, 0, canvas.width, canvas.height);
+// setup
+var setup = function(sunMoonInfo) {
+  ctx.fillStyle = "black";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  drawSunPath();
 
-var drawSun = function() {
-  var [x, y] = getSunPosition();
+  var sunPos = getSunMoonPosition(sunMoonInfo.sun.rise, sunMoonInfo.sun.set, true);
+  var moonPos = getSunMoonPosition(sunMoonInfo.moon.rise, sunMoonInfo.moon.set);
+  drawSun(sunPos);
+  drawMoon(moonPos);
+};
+
+
+var drawSun = function({x, y}) {
   ctx.fillStyle = "yellow";
   ctx.beginPath();
   ctx.arc(x, y, 30, 0, 2 * Math.PI);
   ctx.fill();
 }
 
-var drawMoon = function() {
-  var [x, y] = getMoonPosition();
+var drawMoon = function({x, y}) {
   ctx.fillStyle = "blue";
   ctx.beginPath();
   ctx.arc(x, y, 30, 0, 2 * Math.PI);
@@ -41,31 +45,31 @@ var drawSunPath = function() {
   ctx.stroke();
 }
 
-var getSunPosition = function() {
-  var mins = timeInMinutes();
-  var angle = (mins - sTime) / (eTime - sTime) * eAngle;
-  var x = sx + r * Math.cos(angle - Math.PI);
-  var y = sy + r * Math.sin(angle - Math.PI);
-  return [x, y];
+var getSunMoonPosition = function(rise, set, sun) {
+  var now = Date.now()
+  var angle = (now - rise) / (set - rise) * Math.PI;
+
+  var offset = sun ? -Math.PI : 0
+  var x = sx + r * Math.cos(angle + offset);
+  var y = sy + r * Math.sin(angle + offset);
+  return {x, y};
 }
 
-var getMoonPosition = function() {
-  var mins = timeInMinutes();
-  var angle = (mins - sTime) / (eTime - sTime) * eAngle;
-  var x = sx + r * Math.cos(angle);
-  var y = sy + r * Math.sin(angle);
-  return [x, y];
+var getSunMoonInfo = function(cb) {
+  $.getJSON("http://api.aerisapi.com/sunmoon/amsterdam,nl?client_id=i9bnA3zLs0BeXp9p2l61q&client_secret=NGAQz4HWtEV0v74t8dhZMj8HEWV16PPLiA3FpJLa", function(data) {
+    var body = data.response[0];
+    return cb({
+      sun: {
+        rise: body.sun.rise * 1000,
+        set: body.sun.set * 1000
+      },
+      moon: {
+        rise: body.moon.rise * 1000,
+        set: body.moon.set * 1000
+      }
+    });
+  });
 }
 
-var timeInMinutes = function() {
-  var now = new Date();
-  var min = now.getMinutes();
-  var hours = now.getHours();
-  return min + hours * 60;
-}
-
-drawSunPath();
-drawSun();
-drawMoon();
-
+getSunMoonInfo(setup);
 </script>
